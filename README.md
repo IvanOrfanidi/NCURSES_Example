@@ -1,2 +1,1 @@
-# NCURSES_Example
-
+## NCURSES Lib
