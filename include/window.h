@@ -1,82 +1,75 @@
-#ifndef __WINDOW_H
-#define __WINDOW_H
+#pragma once
 
 #include <main_window.h>
-#include <ncurses.h>
 #include <string>
 
-class Tm_Window : public Tm_MainWindow {
+class Window : private MainWindow {
 public:
-    struct Tm_Config {
-        int m_nHeight;
-        int m_nWidth;
-        int m_nPositionY = 0;
-        int m_nPositionX = 0;
-        int m_nTextColor;
-        int m_nWinColor;
-        std::string m_strName;
+    struct Config {
+        int height;
+        int width;
+        int positionY = 0;
+        int positionX = 0;
+        int textColor;
+        int windowinColor;
+        std::string name;
     };
 
-    Tm_Window(const Tm_Config Config);
+    Window(const Config);
 
-    ~Tm_Window();
+    ~Window();
 
-    Tm_Window(Tm_Window&& other)
+    Window(Window&& other)
     {
-        m_pWindow = other.m_pWindow;
-        m_Config = other.m_Config;
-        m_vTextBuffer = std::move(other.m_vTextBuffer);
+        _ptrWindow = other._ptrWindow;
+        _config = other._config;
+        _textBuffer = std::move(other._textBuffer);
 
-        RemoveSubscriber(&other);
-        AddSubscriber(this);
+        removeSubscriber(&other);
+        addSubscriber(this);
 
-        other.m_pWindow = nullptr;
+        other._ptrWindow = nullptr;
     }
 
-    Tm_Window& operator=(Tm_Window&& other)
+    Window& operator=(Window&& other)
     {
         if (this != &other) {
-            m_pWindow = other.m_pWindow;
-            m_Config = other.m_Config;
-            m_vTextBuffer = std::move(other.m_vTextBuffer);
+            _ptrWindow = other._ptrWindow;
+            _config = other._config;
+            _textBuffer = std::move(other._textBuffer);
 
-            RemoveSubscriber(&other);
-            AddSubscriber(this);
+            removeSubscriber(&other);
+            addSubscriber(this);
 
-            other.m_pWindow = nullptr;
+            other._ptrWindow = nullptr;
         }
         return *this;
     }
 
-    void SetName(const std::string& strName);
+    void setName(const std::string&);
 
-    void SetTextByPosition(const std::string& strText, int nPositionY, int nPositionX);
+    void setTextByPosition(const std::string&, int, int);
 
-    void Refresh() const
-    {
-        wrefresh(m_pWindow);
-    }
+    void refresh() const;
 
-    void Clear();
+    void clear();
 
 protected:
-    void Update() override;
+    virtual void update() override;
 
 private:
     static constexpr int POSITION_WINDOW_NAME = 1;
 
-    void Create();
+    void create();
 
-    void SetTextColorAndWindowsColor() const;
+    void setTextColorAndWindowsColor() const;
 
-    void UpdateName() const;
+    void updateName() const;
 
-    void UpdateText() const;
+    void updateText() const;
 
-    WINDOW* m_pWindow;
-    Tm_Config m_Config;
-    short m_nNumPairColor;
-    std::vector<char> m_vTextBuffer;
+    WINDOW* _ptrWindow;
+    Config _config;
+    short _pairColor;
+    std::vector<char> _textBuffer;
 };
-
-#endif /* __WINDOW_H */

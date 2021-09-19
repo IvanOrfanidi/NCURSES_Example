@@ -1,42 +1,65 @@
-#include <iostream>
 #include <main_window.h>
 
-size_t Tm_MainWindow::m_nCounterOfInstances = 0;
-WINDOW* Tm_MainWindow::m_pMainWindow = nullptr;
-std::vector<Tm_MainWindow*> Tm_MainWindow::m_vptrWindows;
+#include <algorithm>
+#include <iostream>
 
-Tm_MainWindow::Tm_MainWindow()
+MainWindow::MainWindow()
 {
     if (initscr() == nullptr) {
         throw std::runtime_error("Cannot initialising ncurses");
     }
 
-    if (m_nCounterOfInstances++ == 0) {
+    if (_counterOfInstances++ == 0) {
         cbreak();
         nonl();
-        SetEcho(false);
-        SetAppearanceOfCursor(En_CursorMode::INVISIBLE);
+        echoDisable();
+        setAppearanceOfCursor(CursorMode::INVISIBLE);
         refresh();
         start_color();
 
-        init_pair(1, En_DefaultColor::FRONT, En_DefaultColor::BACK);
-        m_pMainWindow = newwin(LINES, COLS, 0, 0);
-        wbkgd(m_pMainWindow, COLOR_PAIR(PAIR_OF_COLORS_OF_MAIN_WINDOW));
+        init_pair(1, DefaultColor::FRONT, DefaultColor::BACK);
+        _ptrMainWindow = newwin(LINES, COLS, 0, 0);
+        wbkgd(_ptrMainWindow, COLOR_PAIR(PAIR_OF_COLORS_OF_MAIN_WINDOW));
         color_set(1, NULL);
-        wrefresh(m_pMainWindow);
+        wrefresh(_ptrMainWindow);
     }
 }
 
-Tm_MainWindow::~Tm_MainWindow()
+MainWindow::~MainWindow()
 {
-    if (--m_nCounterOfInstances == 0) {
+    if (--_counterOfInstances == 0) {
         endwin();
     }
 }
 
-void Tm_MainWindow::UpdateAllWindows() const
+void MainWindow::echoEnable() const
 {
-    for (auto const ptrWindowItem : m_vptrWindows) {
-        ptrWindowItem->Update();
+    echo();
+}
+
+void MainWindow::echoDisable() const
+{
+    noecho();
+}
+
+void MainWindow::addSubscriber(MainWindow* const ptrWindow)
+{
+    _windows.push_back(ptrWindow);
+}
+
+void MainWindow::removeSubscriber(MainWindow* const ptrWindow)
+{
+    _windows.erase(std::find(_windows.begin(), _windows.end(), ptrWindow));
+}
+
+void MainWindow::setAppearanceOfCursor(CursorMode cursor) const
+{
+    curs_set(static_cast<int>(cursor));
+}
+
+void MainWindow::updateAllWindows() const
+{
+    for (auto const ptrWindow : _windows) {
+        ptrWindow->update();
     }
 }

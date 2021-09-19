@@ -1,63 +1,45 @@
-#ifndef __MAIN_WINDOW_H
-#define __MAIN_WINDOW_H
+#pragma once
 
-#include <algorithm>
 #include <ncurses.h>
 #include <vector>
 
-enum class En_CursorMode {
+enum class CursorMode {
     INVISIBLE = 0,
     NORMAL = 1,
     HIGH = 2
 };
 
-class Tm_MainWindow {
+class MainWindow {
 public:
-    ~Tm_MainWindow();
+    virtual ~MainWindow();
 
-    enum En_DefaultColor {
+    enum DefaultColor {
         FRONT = COLOR_BLACK,
         BACK = COLOR_BLACK
     };
 
-    void SetEcho(bool lEcho) const
-    {
-        if (lEcho) {
-            echo();
-        } else {
-            noecho();
-        }
-    }
+    void echoEnable() const;
 
-    void SetAppearanceOfCursor(En_CursorMode enCursor) const
-    {
-        curs_set((int)enCursor);
-    }
+    void echoDisable() const;
 
-    void AddSubscriber(Tm_MainWindow* const pWindow)
-    {
-        m_vptrWindows.push_back(pWindow);
-    }
+    void setAppearanceOfCursor(CursorMode) const;
 
-    void RemoveSubscriber(Tm_MainWindow* const pWindow)
-    {
-        m_vptrWindows.erase(std::find(m_vptrWindows.begin(), m_vptrWindows.end(), pWindow));
-    }
+    void addSubscriber(MainWindow* const);
+
+    void removeSubscriber(MainWindow* const);
 
 protected:
     static constexpr short PAIR_OF_COLORS_OF_MAIN_WINDOW = 1;
 
-    Tm_MainWindow();
+    MainWindow();
 
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
-    void UpdateAllWindows() const;
+    void updateAllWindows() const;
 
-    static size_t m_nCounterOfInstances;
-    static WINDOW* m_pMainWindow;
+    inline static size_t _counterOfInstances = 0;
+    inline static WINDOW* _ptrMainWindow = nullptr;
 
 private:
-    static std::vector<Tm_MainWindow*> m_vptrWindows;
+    inline static std::vector<MainWindow*> _windows;
 };
-
-#endif /* __MAIN_WINDOW_H */

@@ -1,93 +1,97 @@
 #include <window.h>
 
-Tm_Window::Tm_Window(const Tm_Config Config)
-    : m_pWindow(nullptr)
-    , m_Config(Config)
+Window::Window(const Config config)
+    : _ptrWindow(nullptr)
+    , _config(std::move(config))
+    , _pairColor(_counterOfInstances + 1)
 {
-    Create();
-    m_nNumPairColor = m_nCounterOfInstances + 1;
-    SetTextColorAndWindowsColor();
+    create();
+    setTextColorAndWindowsColor();
 
-    UpdateName();
-    const size_t nSize = (m_Config.m_nHeight - 2) * (m_Config.m_nWidth - 2);
-    m_vTextBuffer.reserve(nSize);
-    m_vTextBuffer.resize(nSize);
+    updateName();
+    const size_t size = (_config.height - 2) * (_config.width - 2);
+    _textBuffer.resize(size);
 
-    std::fill(m_vTextBuffer.begin(), m_vTextBuffer.end(), ' ');
+    std::fill(_textBuffer.begin(), _textBuffer.end(), ' ');
 
-    AddSubscriber(this);
-    Refresh();
+    addSubscriber(this);
+    refresh();
 }
 
-Tm_Window::~Tm_Window()
+Window::~Window()
 {
-    if (m_pWindow != nullptr) {
-        wbkgd(m_pWindow, COLOR_PAIR(PAIR_OF_COLORS_OF_MAIN_WINDOW));
+    if (_ptrWindow != nullptr) {
+        wbkgd(_ptrWindow, COLOR_PAIR(PAIR_OF_COLORS_OF_MAIN_WINDOW));
         color_set(1, NULL);
-        Clear();
-        RemoveSubscriber(this);
-        UpdateAllWindows();
-        delwin(m_pWindow);
+        clear();
+        removeSubscriber(this);
+        updateAllWindows();
+        delwin(_ptrWindow);
     }
 }
 
-void Tm_Window::SetTextColorAndWindowsColor() const
+void Window::setTextColorAndWindowsColor() const
 {
-    init_pair(m_nNumPairColor, m_Config.m_nTextColor, m_Config.m_nWinColor);
-    wbkgd(m_pWindow, COLOR_PAIR(m_nNumPairColor));
-    wcolor_set(m_pWindow, m_nNumPairColor, NULL);
+    init_pair(_pairColor, _config.textColor, _config.windowinColor);
+    wbkgd(_ptrWindow, COLOR_PAIR(_pairColor));
+    wcolor_set(_ptrWindow, _pairColor, NULL);
 }
 
-void Tm_Window::UpdateName() const
+void Window::updateName() const
 {
-    if (!m_Config.m_strName.empty()) {
-        mvwaddstr(m_pWindow, 0, POSITION_WINDOW_NAME, m_Config.m_strName.data());
+    if (!_config.name.empty()) {
+        mvwaddstr(_ptrWindow, 0, POSITION_WINDOW_NAME, _config.name.data());
     }
 }
 
-void Tm_Window::UpdateText() const
+void Window::updateText() const
 {
     size_t j = 0;
-    for (int i = 1; i < m_Config.m_nHeight - 1; ++i) {
-        for (int n = 1; n < m_Config.m_nWidth - 1; ++n) {
+    for (int i = 1; i < _config.height - 1; ++i) {
+        for (int n = 1; n < _config.width - 1; ++n) {
             char arrSumb[2] = { '\0', '\0' };
-            arrSumb[0] = m_vTextBuffer[j++];
-            mvwaddstr(m_pWindow, i, n, arrSumb);
+            arrSumb[0] = _textBuffer[j++];
+            mvwaddstr(_ptrWindow, i, n, arrSumb);
         }
     }
-    Refresh();
+    refresh();
 }
 
-void Tm_Window::SetName(const std::string& strName)
+void Window::setName(const std::string& name)
 {
-    m_Config.m_strName = strName;
-    UpdateName();
+    _config.name = name;
+    updateName();
 }
 
-void Tm_Window::SetTextByPosition(const std::string& strText, int nPositionY, int nPositionX)
+void Window::setTextByPosition(const std::string& text, int positionY, int positionX)
 {
-    const size_t nPosition = (nPositionY * (m_Config.m_nWidth - 2)) + nPositionX;
-    std::copy(strText.cbegin(), strText.cend(), m_vTextBuffer.begin() + nPosition);
-    UpdateText();
+    const size_t position = (positionY * (_config.width - 2)) + positionX;
+    std::copy(text.cbegin(), text.cend(), _textBuffer.begin() + position);
+    updateText();
 }
 
-void Tm_Window::Create()
+void Window::create()
 {
-    m_pWindow = newwin(m_Config.m_nHeight, m_Config.m_nWidth, m_Config.m_nPositionY, m_Config.m_nPositionX);
-    box(m_pWindow, 0, 0);
+    _ptrWindow = newwin(_config.height, _config.width, _config.positionY, _config.positionX);
+    box(_ptrWindow, 0, 0);
 }
 
-void Tm_Window::Clear()
+void Window::clear()
 {
-    std::fill(m_vTextBuffer.begin(), m_vTextBuffer.end(), ' ');
-    UpdateText();
+    std::fill(_textBuffer.begin(), _textBuffer.end(), ' ');
+    updateText();
 }
 
-void Tm_Window::Update()
+void Window::update()
 {
-    delwin(m_pWindow);
-    Create();
-    SetTextColorAndWindowsColor();
-    UpdateName();
-    UpdateText();
+    delwin(_ptrWindow);
+    create();
+    setTextColorAndWindowsColor();
+    updateName();
+    updateText();
+}
+
+void Window::refresh() const
+{
+    wrefresh(_ptrWindow);
 }
