@@ -5,26 +5,128 @@
 
 class Window : private MainWindow {
 public:
-    struct Config {
-        int height;
-        int width;
-        int positionY = 0;
-        int positionX = 0;
-        int textColor;
-        int windowinColor;
-        std::string name;
+    class Height {
+    public:
+        explicit Height(int value) noexcept
+            : _value(value)
+        {
+        }
+
+        int value() const noexcept
+        {
+            return _value;
+        }
+
+    private:
+        int _value;
     };
 
-    Window(const Config);
+    class Width {
+    public:
+        explicit Width(int value) noexcept
+            : _value(value)
+        {
+        }
+
+        int value() const noexcept
+        {
+            return _value;
+        }
+
+    private:
+        int _value;
+    };
+
+    class PositionY {
+    public:
+        explicit PositionY(int value) noexcept
+            : _value(value)
+        {
+        }
+
+        int value() const noexcept
+        {
+            return _value;
+        }
+
+    private:
+        int _value;
+    };
+
+    class PositionX {
+    public:
+        explicit PositionX(int value) noexcept
+            : _value(value)
+        {
+        }
+
+        int value() const noexcept
+        {
+            return _value;
+        }
+
+    private:
+        int _value;
+    };
+
+    struct Color {
+        class Text {
+        public:
+            Text() noexcept = default;
+            Text(int value) noexcept
+                : _value(value)
+            {
+            }
+
+            int value() const noexcept
+            {
+                return _value;
+            }
+
+        private:
+            int _value = COLOR_BLACK;
+        };
+
+        class Windowin {
+        public:
+            Windowin() noexcept = default;
+            Windowin(int value) noexcept
+                : _value(value)
+            {
+            }
+
+            int value() const noexcept
+            {
+                return _value;
+            }
+
+        private:
+            int _value = COLOR_WHITE;
+        };
+    };
+
+    Window(const Height height,
+        const Width width,
+        const PositionY positionY,
+        const PositionX positionX,
+        const Color::Text textColor,
+        const Color::Windowin windowinColor,
+        const std::string name);
 
     ~Window();
 
     Window(Window&& other)
+        : _ptrWindow(other._ptrWindow)
+        , _height(other._height)
+        , _width(other._width)
+        , _positionY(other._positionY)
+        , _positionX(other._positionX)
+        , _textColor(other._textColor)
+        , _windowinColor(other._windowinColor)
+        , _name(std::move(other._name))
+        , _pairColor(other._pairColor)
+        , _textBuffer(std::move(other._textBuffer))
     {
-        _ptrWindow = other._ptrWindow;
-        _config = other._config;
-        _textBuffer = std::move(other._textBuffer);
-
         removeSubscriber(&other);
         addSubscriber(this);
 
@@ -35,7 +137,14 @@ public:
     {
         if (this != &other) {
             _ptrWindow = other._ptrWindow;
-            _config = other._config;
+            _height = other._height;
+            _width = other._width;
+            _positionY = other._positionY;
+            _positionX = other._positionX;
+            _textColor = other._textColor;
+            _windowinColor = other._windowinColor;
+            _name = std::move(other._name);
+            _pairColor = other._pairColor;
             _textBuffer = std::move(other._textBuffer);
 
             removeSubscriber(&other);
@@ -69,7 +178,13 @@ private:
     void updateText() const;
 
     WINDOW* _ptrWindow;
-    Config _config;
+    Height _height;
+    Width _width;
+    PositionY _positionY;
+    PositionX _positionX;
+    Color::Text _textColor;
+    Color::Windowin _windowinColor;
+    std::string _name;
     short _pairColor;
     std::vector<char> _textBuffer;
 };
